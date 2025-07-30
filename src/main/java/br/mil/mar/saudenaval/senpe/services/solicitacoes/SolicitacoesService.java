@@ -17,18 +17,21 @@ import br.mil.mar.saudenaval.senpe.repositories.UserRepository;
 import br.mil.mar.saudenaval.senpe.services.EmailService;
 import br.mil.mar.saudenaval.senpe.services.NotificationProducer;
 import br.mil.mar.saudenaval.senpe.services.TokenService;
-import jakarta.mail.MessagingException;
-
 import org.json.JSONObject;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.xml.transform.Result;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
@@ -452,12 +455,14 @@ public class SolicitacoesService {
             String formattedDate = data.getDataExame().format(formatter);
 
             Map<String,String> json = new HashMap<>();
-            json.put("title","Confirmação de Solicitação de Marcação de Exame");
+
 
             if(data.getStatus().equals(Status.AGENDADO.name())){
                    String mensagem =  this.scheduleToNotification(rename,solicitacao.getProtocolo(),formattedDate,data.getHorario());
-                    json.put("message",mensagem);
+                   json.put("title","Confirmação de Solicitação de Marcação de Exame");
+                   json.put("message",mensagem);
                 }else{
+                    json.put("title","Informações sobre sua solicitação de exame");
                     String mensagem = this.messageToNotification(solicitacao.getProtocolo(),rename,data.getStatus());
                     json.put("message", mensagem);
             }
@@ -466,15 +471,16 @@ public class SolicitacoesService {
             String jsonString = jsonObject.toString();
 
 
+            repository.save(solicitacao);
 
+
+            rabbitTemplate.setMessageConverter(new Jackson2JsonMessageConverter());
+            MessageProperties props = new MessageProperties();
+            props.setContentType(MessageProperties.CONTENT_TYPE_JSON);
+            Message message = new Message(jsonString.getBytes(StandardCharsets.UTF_8),props);
             notificationService.createUserQueue(user.getUsername());
             String routingKey = "notification."+user.getUsername();
-            rabbitTemplate.convertAndSend("notification-exchange",routingKey,jsonString);
-
-
-
-
-            repository.save(solicitacao);
+            rabbitTemplate.convertAndSend("notification-exchange",routingKey,message);
 
         }else{
             error = 2;

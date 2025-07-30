@@ -13,13 +13,15 @@ public class NotificationProducer {
 
     @Autowired
     private RabbitAdmin rabbitAdmin;
+    @Autowired
+    private TopicExchange exchange;
 
     public void createUserQueue(String username){
         String queueName = "notifications." + username;
         Queue queue = new Queue(queueName,false);
         rabbitAdmin.declareQueue(queue);
 
-        Binding binding = BindingBuilder.bind(queue).to(new TopicExchange("notification-exchange")).with("notification."+username);
+        Binding binding = BindingBuilder.bind(queue).to(exchange).with("notification."+username);
         rabbitAdmin.declareBinding(binding);
     }
 }
