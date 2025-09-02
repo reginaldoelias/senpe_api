@@ -15,6 +15,8 @@ public interface UserRepository extends JpaRepository<User,String>, JpaSpecifica
 
     UserDetails findByUsername(String username);
 
+    Optional<User> findByEmail(String email);
+
     default Optional<User> findByNipAndDate(String nip, LocalDate dataNascimento){
         Specification<User> specs = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
         Specification<User> NipEqual = (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("username"),nip);

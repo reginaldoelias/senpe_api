@@ -90,10 +90,19 @@ public class User implements UserDetails  {
     @Column(name="whatsapp")
     private Boolean whatsapp;
 
+    private String secret;
+
+    @Column(name = "two_factor_auth")
+    private Boolean usando2FA;
+
     public User() {
     }
 
-    public User(String nipTitular, String posto, String especialidade, String name, LocalDate dataNascimento, String sexo, String nipVinculado, String tel, String pai, String mae, String email, String username, String cpf, String password, int failedAttempt, boolean accountNonLocked, Perfil perfil, LocalDateTime createdAt, LocalDateTime lastLogin, int loginCount,Boolean whatsapp) {
+    public User(String email) {
+        this.email = email;
+    }
+
+    public User(String nipTitular, String posto, String especialidade, String name, LocalDate dataNascimento, String sexo, String nipVinculado, String tel, String pai, String mae, String email, String username, String cpf, String password, int failedAttempt, boolean accountNonLocked, Perfil perfil, LocalDateTime createdAt, LocalDateTime lastLogin, int loginCount, Boolean whatsapp) {
         this.nipTitular = nipTitular;
         this.posto = posto;
         this.especialidade = especialidade;
@@ -268,6 +277,21 @@ public class User implements UserDetails  {
         this.loginCount = loginCount;
     }
 
+    public String getSecret() {
+        return secret;
+    }
+
+    public void setSecret(String secret) {
+        this.secret = secret;
+    }
+
+    public Boolean isUsando2FA() {
+        return usando2FA;
+    }
+
+    public void setUsando2FA(Boolean usando2FA) {
+        this.usando2FA = usando2FA;
+    }
 
     public Boolean getWhatsapp() {
         return whatsapp;
