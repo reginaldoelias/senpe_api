@@ -26,6 +26,9 @@ public class Solicitacoes {
     @Column(name = "altura")
     private String altura;
 
+    @Column(name = "email")
+    private String email;
+
     @Column(name = "dum")
     private String dum;
 
@@ -158,6 +161,15 @@ public class Solicitacoes {
 
     public void setAltura(String altura) {
         this.altura = altura;
+    }
+
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getDum() {

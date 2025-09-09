@@ -1,5 +1,7 @@
 package br.mil.mar.saudenaval.senpe.domain.solicitacoes;
 
+import jakarta.persistence.Column;
+
 import java.time.LocalDate;
 
 public class TomografiaData {
@@ -40,11 +42,45 @@ public class TomografiaData {
 
     private String tipoReacao;
 
+
+    private Boolean biopsiaMama;
+
+
+    private LocalDate dataBiopsia;
+
+
+    private String ladoBiopsia;
+
+    private Boolean nodulo;
+
+
+    private Boolean radioMama;
+
+
+    private String numRadioMama;
+
+    private LocalDate dataRadioMama;
+
+    private Boolean gestante;
+
+    private String tempoGestacao;
+
+    private Boolean sangramento;
+
+    private LocalDate dataSangramento;
+
+    private Boolean reposicaoHormonal;
+
+    private Boolean anticoncepcional;
+
+    private Boolean tabelinha;
+
+
     private String tavi;
 
     private String consentimento;
 
-    public TomografiaData(String frutosDoMar, String descricaoFrutosDoMar, String iodo, String medicamentos, String descricaoMedicamentos, String alimentos, String descricaoAlimentos, String asma, LocalDate crise, String cirurgias, String operacoes, String renais, String listRenais, String contrasteVenoso, String usoVenoso, String dataUsoVenoso, String reacao, String tipoReacao, String tavi, String consentimento) {
+    public TomografiaData(String frutosDoMar, String descricaoFrutosDoMar, String iodo, String medicamentos, String descricaoMedicamentos, String alimentos, String descricaoAlimentos, String asma, LocalDate crise, String cirurgias, String operacoes, String renais, String listRenais, String contrasteVenoso, String usoVenoso, String dataUsoVenoso, String reacao, String tipoReacao, Boolean biopsiaMama, LocalDate dataBiopsia, String ladoBiopsia, Boolean nodulo, Boolean radioMama, String numRadioMama, LocalDate dataRadioMama, Boolean gestante, String tempoGestacao, Boolean sangramento, LocalDate dataSangramento, Boolean reposicaoHormonal, Boolean anticoncepcional, Boolean tabelinha, String tavi, String consentimento) {
         this.frutosDoMar = frutosDoMar;
         this.descricaoFrutosDoMar = descricaoFrutosDoMar;
         this.iodo = iodo;
@@ -63,6 +99,20 @@ public class TomografiaData {
         this.dataUsoVenoso = dataUsoVenoso;
         this.reacao = reacao;
         this.tipoReacao = tipoReacao;
+        this.biopsiaMama = biopsiaMama;
+        this.dataBiopsia = dataBiopsia;
+        this.ladoBiopsia = ladoBiopsia;
+        this.nodulo = nodulo;
+        this.radioMama = radioMama;
+        this.numRadioMama = numRadioMama;
+        this.dataRadioMama = dataRadioMama;
+        this.gestante = gestante;
+        this.tempoGestacao = tempoGestacao;
+        this.sangramento = sangramento;
+        this.dataSangramento = dataSangramento;
+        this.reposicaoHormonal = reposicaoHormonal;
+        this.anticoncepcional = anticoncepcional;
+        this.tabelinha = tabelinha;
         this.tavi = tavi;
         this.consentimento = consentimento;
     }
@@ -209,6 +259,118 @@ public class TomografiaData {
 
     public void setTipoReacao(String tipoReacao) {
         this.tipoReacao = tipoReacao;
+    }
+
+    public Boolean getBiopsiaMama() {
+        return biopsiaMama;
+    }
+
+    public void setBiopsiaMama(Boolean biopsiaMama) {
+        this.biopsiaMama = biopsiaMama;
+    }
+
+    public LocalDate getDataBiopsia() {
+        return dataBiopsia;
+    }
+
+    public void setDataBiopsia(LocalDate dataBiopsia) {
+        this.dataBiopsia = dataBiopsia;
+    }
+
+    public String getLadoBiopsia() {
+        return ladoBiopsia;
+    }
+
+    public void setLadoBiopsia(String ladoBiopsia) {
+        this.ladoBiopsia = ladoBiopsia;
+    }
+
+    public Boolean getNodulo() {
+        return nodulo;
+    }
+
+    public void setNodulo(Boolean nodulo) {
+        this.nodulo = nodulo;
+    }
+
+    public Boolean getRadioMama() {
+        return radioMama;
+    }
+
+    public void setRadioMama(Boolean radioMama) {
+        this.radioMama = radioMama;
+    }
+
+    public String getNumRadioMama() {
+        return numRadioMama;
+    }
+
+    public void setNumRadioMama(String numRadioMama) {
+        this.numRadioMama = numRadioMama;
+    }
+
+    public LocalDate getDataRadioMama() {
+        return dataRadioMama;
+    }
+
+    public void setDataRadioMama(LocalDate dataRadioMama) {
+        this.dataRadioMama = dataRadioMama;
+    }
+
+    public Boolean getGestante() {
+        return gestante;
+    }
+
+    public void setGestante(Boolean gestante) {
+        this.gestante = gestante;
+    }
+
+    public String getTempoGestacao() {
+        return tempoGestacao;
+    }
+
+    public void setTempoGestacao(String tempoGestacao) {
+        this.tempoGestacao = tempoGestacao;
+    }
+
+    public Boolean getSangramento() {
+        return sangramento;
+    }
+
+    public void setSangramento(Boolean sangramento) {
+        this.sangramento = sangramento;
+    }
+
+    public LocalDate getDataSangramento() {
+        return dataSangramento;
+    }
+
+    public void setDataSangramento(LocalDate dataSangramento) {
+        this.dataSangramento = dataSangramento;
+    }
+
+    public Boolean getReposicaoHormonal() {
+        return reposicaoHormonal;
+    }
+
+    public void setReposicaoHormonal(Boolean reposicaoHormonal) {
+        this.reposicaoHormonal = reposicaoHormonal;
+    }
+
+    public Boolean getAnticoncepcional() {
+        return anticoncepcional;
+    }
+
+    public void setAnticoncepcional(Boolean anticoncepcional) {
+        this.anticoncepcional = anticoncepcional;
+    }
+
+    public Boolean getTabelinha() {
+        return tabelinha;
+    }
+
+    public void setTabelinha(Boolean tabelinha) {
+        this.tabelinha = tabelinha;
     }
 
     public String getTavi() {

@@ -78,6 +78,7 @@ public class SolicitacoesService {
         sol.setTel(data.getTel());
         sol.setPeso(data.getPeso());
         sol.setAltura(data.getAltura());
+        sol.setEmail(data.getEmail());
         sol.setDum(data.getDum());
         sol.setTipo(data.getTipo());
         sol.setUnidade(data.getLocal());

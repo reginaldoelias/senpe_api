@@ -14,6 +14,8 @@ public class IdentificacaoData {
 
     private String altura;
 
+    private String email;
+
     private String dum;
 
     private String tipo;
@@ -84,6 +86,14 @@ public class IdentificacaoData {
 
     public void setAltura(String altura) {
         this.altura = altura;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getDum() {
