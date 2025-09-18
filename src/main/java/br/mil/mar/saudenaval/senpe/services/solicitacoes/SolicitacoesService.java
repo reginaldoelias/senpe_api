@@ -18,12 +18,7 @@ import br.mil.mar.saudenaval.senpe.services.EmailService;
 import br.mil.mar.saudenaval.senpe.services.NotificationProducer;
 import br.mil.mar.saudenaval.senpe.services.TokenService;
 import org.json.JSONObject;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
@@ -58,6 +52,9 @@ public class SolicitacoesService {
     @Autowired
     private RessonanciaRepository ressonanciaRepository;
 
+    @Autowired
+    private NotificationProducer notificationProducer;
+
     private final RabbitTemplate rabbitTemplate;
 
 
@@ -70,7 +67,7 @@ public class SolicitacoesService {
 
     public ResponseEntity<String> saveSolicitacaoTomografia(MultipartFile file, IdentificacaoData data, TomografiaData questionario) {
         Integer error = 0;
-        String message = "";
+       // String message = "";
         Solicitacoes sol = new Solicitacoes();
         Tomografia tomografia = new Tomografia();
         sol.setUserId(data.getUserID());
@@ -119,7 +116,7 @@ public class SolicitacoesService {
         tomografia.setConsentimento(questionario.getConsentimento());
 
         var possibleUser = userRepository.findById(data.getUserID());
-        if(possibleUser.isPresent()){
+    if(possibleUser.isPresent()){
         User user = possibleUser.get();
         String email = user.getEmail();
         String[] fullName = user.getName().split(" ");
@@ -148,32 +145,39 @@ public class SolicitacoesService {
             
             String nome = name.toLowerCase();
             String rename = nome.substring(0,1).toUpperCase() + nome.substring(1);
-            
+           /*
             Map<String,String> json = new HashMap<>();
+            json.put("userId",user.getUsername());
             json.put("title","Confirmação de Solicitação de Marcação de Exame");
             json.put("message",rename + ", recebemos o seu pedido de exame. O número de protocolo é: " + protocolo.toUpperCase()+". Em breve, entraremos em contato para confirmar a data e horário do seu exame.");
 
             JSONObject jsonObject = new JSONObject(json);
             String jsonString = jsonObject.toString();
+            */
 
+            String title = "Confirmação de Solicitação de Marcação de Exame";
 
-            
-            notificationService.createUserQueue(data.getUsername());
-            String routingKey = "notification."+data.getUsername();
-            rabbitTemplate.convertAndSend("notification-exchange",routingKey,jsonString);
+            String notification = rename + ", recebemos o seu pedido de exame. O número de protocolo é: " + protocolo.toUpperCase()+". Em breve, entraremos em contato para confirmar a data e horário do seu exame.";
+            //notificationService.createUserQueue(data.getUsername());
+            notificationProducer.sendNotification(user,title,notification);
+            //String routingKey = "notification."+data.getUsername();
+           // String routingKey = "notification";
+           // rabbitTemplate.convertAndSend("notification-exchange",routingKey,jsonString);
 
-    }
-
-        switch (error){
-            case 1-> {
-                message = "Houve um problema ao tentar salvar sua solicitação de exames. Por favor, tente novamente mais tarde.";
-
-            }
-            case 2->{
-                message = "Não foi possível enviar seu número de protocolo por email. Por favor, verifique o histórico de suas solicitações para confirmar sua solicitação.";
-            }
-            default -> message = "Solicitação enviada com sucesso!";
+    }else{
+            error = 1;
         }
+
+       String message =  switch (error){
+            case 1-> "Houve um problema ao tentar salvar sua solicitação de exames. Por favor, tente novamente mais tarde.";
+
+
+            case 2->"Não foi possível enviar seu número de protocolo por email. Por favor, verifique o histórico de suas solicitações para confirmar sua solicitação.";
+
+            default -> "Solicitação enviada com sucesso!";
+        };
+
+
         return error.equals(0) ? ResponseEntity.ok().body(message): ResponseEntity.badRequest().body(message);
     }
 
@@ -184,7 +188,7 @@ public class SolicitacoesService {
 
     public ResponseEntity<String> saveSolicitacaoRessonancia(MultipartFile file, IdentificacaoData data, RessonanciaData questionario) {
        Integer error = 0;
-       String message = "";
+      // String message = "";
         Solicitacoes sol = new Solicitacoes();
         Ressonancia ressonancia = new Ressonancia();
         sol.setUserId(data.getUserID());
@@ -333,33 +337,36 @@ public class SolicitacoesService {
             
             String nome = name.toLowerCase();
             String rename = nome.substring(0,1).toUpperCase() + nome.substring(1);
-            
+
+            /*
             Map<String,String> json = new HashMap<>();
+            json.put("userId",user.getUsername());
             json.put("title","Confirmação de Solicitação de Marcação de Exame");           
             json.put("message",rename + ", recebemos o seu pedido de exame. O número de protocolo é: " + protocolo.toUpperCase()+". Em breve, entraremos em contato para confirmar a data e horário do seu exame.");
 
             JSONObject jsonObject = new JSONObject(json);
             String jsonString = jsonObject.toString();
 
-
+            */
+            String title = "Confirmação de Solicitação de Marcação de Exame";
+            String notificacao = rename + ", recebemos o seu pedido de exame. O número de protocolo é: " + protocolo.toUpperCase()+". Em breve, entraremos em contato para confirmar a data e horário do seu exame.";
             
-            notificationService.createUserQueue(data.getUsername());
-            String routingKey = "notification."+data.getUsername();
-            rabbitTemplate.convertAndSend("notification-exchange",routingKey,jsonString);
+           // notificationService.createUserQueue(data.getUsername());
+            //String routingKey = "notification."+data.getUsername();
+           // String routingKey = "notification";
+          //  rabbitTemplate.convertAndSend("notification-exchange",routingKey,jsonString);
+            notificationProducer.sendNotification(user,title,notificacao);
             
-            
+        }else{
+            error = 1;
         }
 
-        switch (error){
-            case 1-> {
-                message = "Houve um problema ao tentar salvar sua solicitação de exames. Por favor, tente novamente mais tarde.";
+       String message =  switch (error) {
+           case 1 -> "Houve um problema ao tentar salvar sua solicitação de exames. Por favor, tente novamente mais tarde.";
+           case 2 ->"Não foi possível enviar seu número de protocolo por email. Por favor, verifique o histórico de suas solicitações para confirmar sua solicitação.";
+           default -> "Solicitação enviada com sucesso!";
+       };
 
-            }
-            case 2->{
-                message = "Não foi possível enviar seu número de protocolo por email. Por favor, verifique o histórico de suas solicitações para confirmar sua solicitação.";
-            }
-            default -> message = "Solicitação enviada com sucesso!";
-        }
         return error.equals(0) ? ResponseEntity.ok().body(message): ResponseEntity.badRequest().body(message);
     }
 
@@ -401,9 +408,12 @@ public class SolicitacoesService {
         return possibleSol.orElse(null);
     }
 
+
+
+
     public ResponseEntity<String> schedule(MarcacaoData data, String id){
        Integer error = 0;
-       String errorMessage = "";
+
         var possibleSol = repository.findById(id);
         if (possibleSol.isPresent()){
             Solicitacoes solicitacao = possibleSol.get();
@@ -418,13 +428,10 @@ public class SolicitacoesService {
             var possibleOperador = userRepository.findUserByUsername(data.getOperador());
 
 
-            if(possibleOperador.isPresent()){
-                User operator = possibleOperador.get();
-                //String posto = renamePosto(operator.getPosto());
-                //String nome = operator.getName();
-                //String operador = posto + " " + nome;
-                solicitacao.setOperador(operator.getUsername());
-            }
+            //String posto = renamePosto(operator.getPosto());
+            //String nome = operator.getName();
+            //String operador = posto + " " + nome;
+            possibleOperador.ifPresent(operator -> solicitacao.setOperador(operator.getUsername()));
 
             String userId = solicitacao.getUserId();
             var possibleUser = userRepository.findById(userId);
@@ -452,49 +459,53 @@ public class SolicitacoesService {
             String rename = nome.substring(0,1).toUpperCase() + nome.substring(1);
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            String formattedDate = data.getDataExame().format(formatter);
+            String formattedDate = data.getDataExame() != null ? data.getDataExame().format(formatter) : "";
 
             Map<String,String> json = new HashMap<>();
 
-
+        /*
             if(data.getStatus().equals(Status.AGENDADO.name())){
                    String mensagem =  this.scheduleToNotification(rename,solicitacao.getProtocolo(),formattedDate,data.getHorario());
+                   json.put("userId",user.getUsername());
                    json.put("title","Confirmação de Solicitação de Marcação de Exame");
                    json.put("message",mensagem);
                 }else{
+                    json.put("userId",user.getUsername());
                     json.put("title","Informações sobre sua solicitação de exame");
                     String mensagem = this.messageToNotification(solicitacao.getProtocolo(),rename,data.getStatus());
                     json.put("message", mensagem);
-            }
-
+            }*/
+            /*
             JSONObject jsonObject = new JSONObject(json);
             String jsonString = jsonObject.toString();
+            */
 
+            String title = data.getStatus().equals(Status.AGENDADO.name()) ? "Confirmação de Solicitação de Marcação de Exame" : "Informações sobre sua solicitação de exame";
+            String notification = data.getStatus().equals(Status.AGENDADO.name()) ? this.scheduleToNotification(rename,solicitacao.getProtocolo(),formattedDate,data.getHorario()) : this.messageToNotification(solicitacao.getProtocolo(),rename,data.getStatus());
 
             repository.save(solicitacao);
+            notificationProducer.sendNotification(user,title,notification);
 
-
-            rabbitTemplate.setMessageConverter(new Jackson2JsonMessageConverter());
+          /*  rabbitTemplate.setMessageConverter(new Jackson2JsonMessageConverter());
             MessageProperties props = new MessageProperties();
             props.setContentType(MessageProperties.CONTENT_TYPE_JSON);
             Message message = new Message(jsonString.getBytes(StandardCharsets.UTF_8),props);
             notificationService.createUserQueue(user.getUsername());
-            String routingKey = "notification."+user.getUsername();
-            rabbitTemplate.convertAndSend("notification-exchange",routingKey,message);
+            //String routingKey = "notification."+user.getUsername();
+            String routingKey = "notification";
+            rabbitTemplate.convertAndSend("notification-exchange",routingKey,message);*/
 
         }else{
             error = 2;
 
         }
-        switch (error){
-            case 1->{
-                errorMessage = "Efetuamos o agendamento, porém não foi possível enviar a notificação ao paciente por e-mail. Solicitamos que o contato seja realizado manualmente.";
-            }
-            case 2->{
-               errorMessage = "Não foi possível concluir este registro. Por favor, entre em contato com o administrador ou tente novamente mais tarde.";
-            }
-            default -> errorMessage = "Registro efetuado com sucesso";
-        }
+
+
+       String errorMessage =  switch (error){
+            case 1-> "Efetuamos o agendamento, porém não foi possível enviar a notificação ao paciente por e-mail. Solicitamos que o contato seja realizado manualmente.";
+            case 2->"Não foi possível concluir este registro. Por favor, entre em contato com o administrador ou tente novamente mais tarde.";
+            default -> "Registro efetuado com sucesso";
+        };
 
         return error.equals(0) ? ResponseEntity.ok().body(errorMessage) : ResponseEntity.badRequest().body(errorMessage);
     }
@@ -542,17 +553,21 @@ public class SolicitacoesService {
             String rename = nome.substring(0,1).toUpperCase() + nome.substring(1);
 
             Map<String,String> json = new HashMap<>();
+            json.put("userId",user.getUsername());
             json.put("title","Informação da situação do Pedido de Exame");
             json.put("message", rename + ", Gostaríamos informar que sua solicitação de exame, registrada sob o número de protocolo " + sol.getProtocolo() +" está em análise. Em breve, enviaremos o resultado desta verificação.");
 
             JSONObject jsonObject = new JSONObject(json);
             String jsonString = jsonObject.toString();
 
+            String title = "Informação da situação do Pedido de Exame";
+            String notification =  rename + ", Gostaríamos informar que sua solicitação de exame, registrada sob o número de protocolo " + sol.getProtocolo() +" está em análise. Em breve, enviaremos o resultado desta verificação.";
 
-
-            notificationService.createUserQueue(user.getUsername());
-            String routingKey = "notification."+user.getUsername();
-            rabbitTemplate.convertAndSend("notification-exchange",routingKey,jsonString);
+            notificationProducer.sendNotification(user,title,notification);
+           // notificationService.createUserQueue(user.getUsername());
+           // String routingKey = "notification."+user.getUsername();
+           // String routingKey = "notification";
+           // rabbitTemplate.convertAndSend("notification-exchange",routingKey,jsonString);
 
 
         }
@@ -678,15 +693,22 @@ public class SolicitacoesService {
                  String rename = nome.substring(0,1).toUpperCase() + nome.substring(1);
 
                  Map<String,String> json = new HashMap<>();
+                 json.put("userId",user.getUsername());
                  json.put("title","Informação da situação do Pedido de Exame");
                  json.put("message", rename + ", Gostaríamos informar que o resultado do seu exame, registrada sob o número de protocolo " + solicitacao.getProtocolo() +", encontra-se disponível.");
 
                  JSONObject jsonObject = new JSONObject(json);
                  String jsonString = jsonObject.toString();
 
-                 notificationService.createUserQueue(user.getUsername());
-                 String routingKey = "notification."+user.getUsername();
-                 rabbitTemplate.convertAndSend("notification-exchange",routingKey,jsonString);
+                 String title = "Informação da situação do Pedido de Exame";
+                 String notification = rename + ", Gostaríamos informar que o resultado do seu exame, registrada sob o número de protocolo " + solicitacao.getProtocolo() +", encontra-se disponível.";
+
+                 notificationProducer.sendNotification(user,title,notification);
+
+                // notificationService.createUserQueue(user.getUsername());
+               //  String routingKey = "notification."+user.getUsername();
+               //  String routingKey = "notification";
+               //  rabbitTemplate.convertAndSend("notification-exchange",routingKey,jsonString);
              }
 
             return ResponseEntity.ok().body("Resultado emitido com sucesso!");
@@ -726,14 +748,17 @@ public class SolicitacoesService {
                 String rename = nome.substring(0,1).toUpperCase() + nome.substring(1);
 
                 Map<String,String> json = new HashMap<>();
+                json.put("userId",user.getUsername());
                 json.put("title","Informação da situação do Pedido de Exame");
                 json.put("message", rename + ", Gostaríamos de confirmar que sua solicitação para a marcação de exame, registrada sob o número de protocolo " + sol.getProtocolo() + " foi desmarcada conforme o seu pedido.");
 
                 JSONObject jsonObject = new JSONObject(json);
                 String jsonString = jsonObject.toString();
 
-                notificationService.createUserQueue(user.getUsername());
-                String routingKey = "notification."+user.getUsername();
+                //notificationService.createUserQueue(user.getUsername());
+                //String routingKey = "notification."+user.getUsername();
+                //String routingKey = "notification";
+                String routingKey = "notification." + user.getUsername();
                 rabbitTemplate.convertAndSend("notification-exchange",routingKey,jsonString);
             }
 

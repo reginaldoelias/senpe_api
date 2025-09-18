@@ -11,14 +11,12 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQConfig {
 
     @Bean
-    public TopicExchange exchange(){
+    public TopicExchange exchange() {
         return new TopicExchange("notification-exchange");
     }
 
     @Bean
-    public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory){
+    public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
         return new RabbitAdmin(connectionFactory);
     }
-
-
 }

@@ -86,7 +86,7 @@ public class Solicitacoes {
     @Column(name = "obs")
     private String obs;
 
-    @Column(name = "resultado")
+    @Column(name = "resultado", columnDefinition = "TEXT")
     private String resultado;
 
     @Column(name = "updated_at")
