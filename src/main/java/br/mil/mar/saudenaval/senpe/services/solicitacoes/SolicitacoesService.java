@@ -770,4 +770,15 @@ public class SolicitacoesService {
 
     }
 
+    public void confirmRead(String username){
+        List<Solicitacoes> solicitacoes = repository.findAll();
+        solicitacoes.forEach(solicitacao->{
+            if (solicitacao.getNip().equals(username)){
+                solicitacao.setUserConfirmationRead(solicitacao.getSituacao().equals("AGENDADO"));
+            }
+
+            repository.save(solicitacao);
+        });
+    }
+
 }

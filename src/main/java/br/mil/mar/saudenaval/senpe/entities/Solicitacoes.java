@@ -86,6 +86,9 @@ public class Solicitacoes {
     @Column(name = "obs")
     private String obs;
 
+    @Column(name = "user_confirmation_read")
+    private Boolean userConfirmationRead;
+
     @Column(name = "resultado", columnDefinition = "TEXT")
     private String resultado;
 
@@ -319,6 +322,14 @@ public class Solicitacoes {
 
     public void setPrioridade(Boolean prioridade) {
         this.prioridade = prioridade;
+    }
+
+    public Boolean getUserConfirmationRead() {
+        return userConfirmationRead;
+    }
+
+    public void setUserConfirmationRead(Boolean userConfirmationRead) {
+        this.userConfirmationRead = userConfirmationRead;
     }
 
     public String getResultado() {

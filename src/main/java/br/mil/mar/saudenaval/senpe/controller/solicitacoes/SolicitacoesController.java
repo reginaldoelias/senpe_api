@@ -129,4 +129,10 @@ public class SolicitacoesController {
         String result = service.userCancelSchedule(id);
         return ResponseEntity.ok().body(result);
     }
+
+    @PutMapping("/schedule/confirm-read/{username}")
+    public ResponseEntity<Void> confirmRead(@PathVariable String username){
+        service.confirmRead(username);
+        return ResponseEntity.ok().build();
+    }
 }

@@ -62,6 +62,7 @@ public class SecurityConfiguration {
                                 .requestMatchers(HttpMethod.POST,"/solicitacao/schedule/**").hasRole(Perfil.ADMINISTRADOR.name())
                                 .requestMatchers(HttpMethod.PUT,"/solicitacao/schedule/cancel/**").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/solicitacao/search").hasRole(Perfil.ADMINISTRADOR.name())
+                                .requestMatchers(HttpMethod.PUT,"/solicitacao/schedule/confirm-read/**").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/users/operador/**").hasRole(Perfil.ADMINISTRADOR.name())
                                 .requestMatchers(HttpMethod.GET,"/users/perfil/{nip}/**").hasRole(Perfil.ADMINISTRADOR.name())
                                 .requestMatchers(HttpMethod.POST,"/users/system").hasRole(Perfil.ADMINISTRADOR.name())
