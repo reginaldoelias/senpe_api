@@ -56,6 +56,43 @@ public class Tomografia {
     @Column(name = "tipo_reacao")
     private String tipoReacao;
 
+    @Column(name = "biopesia_mama")
+    private Boolean biopsiaMama;
+
+    @Column(name = "data_biopsia")
+    private LocalDate dataBiopsia;
+
+    @Column(name = "lado_biopsia")
+    private String ladoBiopsia;
+
+    private Boolean nodulo;
+
+    @Column(name = "radio_mama")
+    private Boolean radioMama;
+
+    @Column(name = "num_radio_mama")
+    private String numRadioMama;
+
+    @Column(name = "data_radio_mama")
+    private LocalDate dataRadioMama;
+
+    private Boolean gestante;
+
+    @Column(name = "tempo_gestacao")
+    private String tempoGestacao;
+
+    private Boolean sangramento;
+
+    @Column(name = "data_sangramento")
+    private LocalDate dataSangramento;
+
+    @Column(name = "reposicao_hormonal")
+    private Boolean reposicaoHormonal;
+
+    private Boolean anticoncepcional;
+
+    private Boolean tabelinha;
+
     private String tavi;
 
     private String consentimento;
@@ -242,6 +279,118 @@ public class Tomografia {
 
     public void setTipoReacao(String tipoReacao) {
         this.tipoReacao = tipoReacao;
+    }
+
+    public Boolean getBiopsiaMama() {
+        return biopsiaMama;
+    }
+
+    public void setBiopsiaMama(Boolean biopsiaMama) {
+        this.biopsiaMama = biopsiaMama;
+    }
+
+    public LocalDate getDataBiopsia() {
+        return dataBiopsia;
+    }
+
+    public void setDataBiopsia(LocalDate dataBiopsia) {
+        this.dataBiopsia = dataBiopsia;
+    }
+
+    public String getLadoBiopsia() {
+        return ladoBiopsia;
+    }
+
+    public void setLadoBiopsia(String ladoBiopsia) {
+        this.ladoBiopsia = ladoBiopsia;
+    }
+
+    public Boolean getNodulo() {
+        return nodulo;
+    }
+
+    public void setNodulo(Boolean nodulo) {
+        this.nodulo = nodulo;
+    }
+
+    public Boolean getRadioMama() {
+        return radioMama;
+    }
+
+    public void setRadioMama(Boolean radioMama) {
+        this.radioMama = radioMama;
+    }
+
+    public String getNumRadioMama() {
+        return numRadioMama;
+    }
+
+    public void setNumRadioMama(String numRadioMama) {
+        this.numRadioMama = numRadioMama;
+    }
+
+    public LocalDate getDataRadioMama() {
+        return dataRadioMama;
+    }
+
+    public void setDataRadioMama(LocalDate dataRadioMama) {
+        this.dataRadioMama = dataRadioMama;
+    }
+
+    public Boolean getGestante() {
+        return gestante;
+    }
+
+    public void setGestante(Boolean gestante) {
+        this.gestante = gestante;
+    }
+
+    public String getTempoGestacao() {
+        return tempoGestacao;
+    }
+
+    public void setTempoGestacao(String tempoGestacao) {
+        this.tempoGestacao = tempoGestacao;
+    }
+
+    public Boolean getSangramento() {
+        return sangramento;
+    }
+
+    public void setSangramento(Boolean sangramento) {
+        this.sangramento = sangramento;
+    }
+
+    public LocalDate getDataSangramento() {
+        return dataSangramento;
+    }
+
+    public void setDataSangramento(LocalDate dataSangramento) {
+        this.dataSangramento = dataSangramento;
+    }
+
+    public Boolean getReposicaoHormonal() {
+        return reposicaoHormonal;
+    }
+
+    public void setReposicaoHormonal(Boolean reposicaoHormonal) {
+        this.reposicaoHormonal = reposicaoHormonal;
+    }
+
+    public Boolean getAnticoncepcional() {
+        return anticoncepcional;
+    }
+
+    public void setAnticoncepcional(Boolean anticoncepcional) {
+        this.anticoncepcional = anticoncepcional;
+    }
+
+    public Boolean getTabelinha() {
+        return tabelinha;
+    }
+
+    public void setTabelinha(Boolean tabelinha) {
+        this.tabelinha = tabelinha;
     }
 
     public String getTavi() {

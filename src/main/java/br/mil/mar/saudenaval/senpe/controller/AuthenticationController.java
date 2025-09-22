@@ -1,6 +1,7 @@
 package br.mil.mar.saudenaval.senpe.controller;
 
 import br.mil.mar.saudenaval.senpe.domain.LoginResponseToken;
+import br.mil.mar.saudenaval.senpe.domain.Register.CodigoDTO;
 import br.mil.mar.saudenaval.senpe.domain.Register.RegisterData;
 import br.mil.mar.saudenaval.senpe.entities.Login;
 import br.mil.mar.saudenaval.senpe.entities.User;
@@ -8,8 +9,10 @@ import br.mil.mar.saudenaval.senpe.repositories.UserRepository;
 import br.mil.mar.saudenaval.senpe.services.AuthorizationService;
 import br.mil.mar.saudenaval.senpe.services.TokenService;
 import br.mil.mar.saudenaval.senpe.services.UserServices;
+import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,7 +20,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @RestController
@@ -139,19 +145,18 @@ public class AuthenticationController {
     }
 
     @PostMapping("/recover")
-    public ResponseEntity<String> recoverPassword(@RequestBody RegisterData data) {
+    public ResponseEntity<?> recoverPassword(@RequestBody RegisterData data) {
 
-        try {
-            String email = userServices.recoverPassword(data.getNip(), data.getDataNascimento());
+
+           /* String email = userServices.recoverPassword(data.getNip(), data.getDataNascimento());
             if (email.isBlank()){
                 return ResponseEntity.badRequest().body("Usuário não encontrado. Verifique se o NIP ou a data de nascimento foi digitado corretamente e tente novamente.");
             }else{
+                GoogleAuthenticatorKey key = userServices.gerarChave();
                 return ResponseEntity.ok().body(email);
-            }
-        } catch (MessagingException e) {
-            return ResponseEntity.badRequest().body("Ocorreu um erro ao tentar enviar um email para a recuperação da sua senha. Tente novamente mais tarde.");
-            //throw new RuntimeException(e);
-        }
+            }*/
+            String email = userServices.recoverPassword(data.getNip(), data.getDataNascimento());
+            return email.isBlank() ? ResponseEntity.badRequest().build() : ResponseEntity.ok().body(email);
     }
 
     @PostMapping("/reset-password")
@@ -202,5 +207,82 @@ public class AuthenticationController {
         String info = userServices.updateUser(email,tel,username,whatsapp);
         return ResponseEntity.ok().body(info);
     }
+
+    @PostMapping("/oath/setup")
+    public ResponseEntity<?> setup(@RequestBody Map<String, String> body) {
+        //String email = body.get("email");
+        String nip = body.get("nip");
+        GoogleAuthenticatorKey key = userServices.gerarChave();
+
+        var  possibleUser = repository.findUserByUsername(nip);
+        if(possibleUser.isPresent()){
+            User usuario = possibleUser.get();
+            usuario.setSecret(key.getKey());
+            usuario.setUsando2FA(true);
+            String email = usuario.getEmail();
+            repository.save(usuario);
+            String secret = key.getKey();
+            String qrCodeUrl = userServices.gerarQrCode("SaudeNaval-SENPE", email, key);
+            Map<String,String> response = new HashMap<>();
+            response.put("secret",secret);
+            response.put("email",email);
+            response.put("qrCodeUrl",qrCodeUrl);
+            return ResponseEntity.ok(response);
+        }else{
+            return ResponseEntity.badRequest().build();
+        }
+
+    }
+
+    @PostMapping("/validar")
+    public ResponseEntity<String> validar(@RequestBody CodigoDTO dto) {
+        var possibleUser = repository.findByEmail(dto.getEmail());
+
+        if (possibleUser.isPresent()){
+            User user = possibleUser.get();
+            boolean valido = userServices.validarCodigo(user.getSecret(), dto.getCodigo());
+
+            if (valido) {
+                String token = tokenService.generateTokenToRecoverPassword(user);
+                return ResponseEntity.ok(token);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Código inválido.");
+            }
+        }else{
+            return ResponseEntity.badRequest().body("Usuário não encontrado");
+        }
+    }
+
+    @PostMapping("/reauthenticate")
+    public ResponseEntity<?> reauthenticate(@RequestBody RegisterData data){
+        return userServices.reauthenticate(data) ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+}
+
+@PostMapping("/app/qrcode")
+    public ResponseEntity<?> settings(@RequestBody Map<String, String> body) {
+    String nip = body.get("nip");
+    String nascimento = body.get("nascimento");
+    String cpf = body.get("cpf");
+
+    GoogleAuthenticatorKey key = userServices.gerarChave();
+    User user = userServices.validateUserSettings(nip, nascimento, cpf);
+    user.setSecret(key.getKey());
+    user.setUsando2FA(true);
+    String email = user.getEmail();
+
+    if (!email.isBlank()) {
+            repository.save(user);
+            String secret = key.getKey();
+            String qrCodeUrl = userServices.gerarQrCode("SaudeNaval-SENPE", email, key);
+            Map<String, String> response = new HashMap<>();
+            response.put("secret", secret);
+            response.put("email", email);
+            response.put("qrCodeUrl", qrCodeUrl);
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
 
 }

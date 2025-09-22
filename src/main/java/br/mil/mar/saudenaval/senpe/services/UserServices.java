@@ -9,6 +9,9 @@ import br.mil.mar.saudenaval.senpe.enums.Perfil;
 import br.mil.mar.saudenaval.senpe.repositories.UserRepository;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
+import com.warrenstrange.googleauth.GoogleAuthenticator;
+import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
+import com.warrenstrange.googleauth.GoogleAuthenticatorQRGenerator;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -39,6 +43,9 @@ public class UserServices {
 
     @Autowired
     private TokenService tokenService;
+
+    @Autowired
+    private GoogleAuthenticator googleAuthenticator;
 
     private boolean registered = false;
 
@@ -269,7 +276,8 @@ public class UserServices {
 
     public ResponseEntity<String> registerUser(RegisterData data) {
         var posssibleUser = repository.findByNipAndDate(data.getNip(), data.getDataNascimento());
-
+        System.out.println(data.getNip());
+        System.out.println(data.getCpf());
         if (posssibleUser.isPresent()) {
             User user = posssibleUser.get();
             String[] cpf = user.getCpf().split("");
@@ -281,6 +289,7 @@ public class UserServices {
                     String encryptedPassword = new BCryptPasswordEncoder().encode(data.getPassword());
                     user.setPassword(encryptedPassword);
                     user.setPerfil(Perfil.valueOf("PACIENTE"));
+                    user.setCreatedAt(CreateTime.now());
                     repository.save(user);
                     registered = true;
                 } else {
@@ -298,21 +307,25 @@ public class UserServices {
     }
 
 
-    public String recoverPassword(String nip, LocalDate dataNascimento) throws MessagingException {
+    public String recoverPassword(String nip, LocalDate dataNascimento)  {
+
         var possibleUser = repository.findByNipAndDate(nip,dataNascimento);
-        String email = "";
+        //String email = "";
+
         if (possibleUser.isPresent()){
             User user = possibleUser.get();
-            email = user.getEmail();
-            String[] fullname = user.getName().split(" ");
-            String firstName = fullname[0];
+            return user.getEmail();
+           // GoogleAuthenticatorKey key = new GoogleAuthenticatorKey.Builder(user.getSecret()).build();
+           // return gerarQrCode("Saúde Naval", email, key);
+            // String[] fullname = user.getName().split(" ");
+            //String firstName = fullname[0];
 
-            String token = tokenService.generateTokenToRecoverPassword(user);
+           // String token = tokenService.generateTokenToRecoverPassword(user);
 
-            emailService.sendInstructionsByMail(email,firstName,token);
+           // emailService.sendInstructionsByMail(email,firstName,token);
+        }else{
+            return "";
         }
-
-        return email;
     }
 
     public Optional<User> getUserToResetPassword(String token){
@@ -449,6 +462,43 @@ public class UserServices {
             return "Usuário atualizado com sucesso";
         }else{
             return "Usuário não encontrado.";
+        }
+    }
+
+    public GoogleAuthenticatorKey gerarChave() {
+        return googleAuthenticator.createCredentials();
+    }
+
+    public String gerarQrCode(String appName, String email, GoogleAuthenticatorKey key) {
+        return GoogleAuthenticatorQRGenerator.getOtpAuthTotpURL(appName, email, key);
+    }
+
+    public boolean validarCodigo(String secret, int codigo) {
+        return googleAuthenticator.authorize(secret, codigo);
+    }
+
+    public Boolean reauthenticate(RegisterData data){
+        var possibleUser = repository.findByCpf(data.getCpf());
+        if (possibleUser.isPresent()){
+            User user = possibleUser.get();
+            user.setEmail(null);
+            user.setPassword(null);
+            user.setSecret(null);
+            user.setUsando2FA(null);
+            repository.save(user);
+        }
+        return possibleUser.isPresent();
+    }
+
+    public User validateUserSettings(String nip, String nascimento, String cpf){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMyyyy");
+        LocalDate data = LocalDate.parse(nascimento,formatter);
+        var possibleUser = repository.findByNipAndDate(nip,data);
+        if (possibleUser.isPresent()){
+            User user = possibleUser.get();
+            return user.getCpf().equals(cpf) ? user : new User( "");
+        }else{
+            return new User("");
         }
     }
 

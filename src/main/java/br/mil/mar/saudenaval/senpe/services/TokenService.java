@@ -73,6 +73,10 @@ public class TokenService {
         return LocalDateTime.now().plusHours(8).toInstant(ZoneOffset.of("-03:00"));
     }
 
+    private Instant getExpirationTimeToRecoverPass(){
+        return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
+    }
+
     private Instant getBiometriaExpirationTime(){
         return LocalDateTime.now().plusYears(100).toInstant(ZoneOffset.of("-03:00"));
     }
@@ -83,7 +87,7 @@ public class TokenService {
             String token = JWT.create()
                     .withIssuer("security")
                     .withSubject(user.getId())
-                    .withExpiresAt(getExpirationTime())
+                    .withExpiresAt(getExpirationTimeToRecoverPass())
                     .withClaim("username",user.getUsername())
                     .sign(algorithm);
             return token;
