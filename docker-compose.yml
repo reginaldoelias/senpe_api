@@ -5,8 +5,16 @@ services:
       - "8080:8080"
     depends_on:
       - db
+      - rabbitmq
     env_file:
-      - .env   # carrega variáveis para o container da aplicação
+      - .env
+    environment:
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS}
+    volumes:
+      - files_data:/home/dsm/senpe/default/files:rw
 
   db:
     image: postgres:17.7
@@ -16,7 +24,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -40,3 +47,4 @@ services:
 volumes:
   postgres_data:
   pgadmin_data:
+  files_data:
